@@ -18,6 +18,8 @@ public class ChessMatch {
     private int turn;
     private Color currentPlayer;
     private boolean check;
+    private boolean testCheckMate;
+
 
     List<Piece> capturedPieces = new ArrayList<>();
     List<Piece> piecesOnTheBoard = new ArrayList<>();
@@ -27,6 +29,10 @@ public class ChessMatch {
         turn = 1;
         currentPlayer = Color.WHITE;
 
+    }
+
+    public boolean TestCheckMate() {
+        return testCheckMate;
     }
 
     public int getTurn() {
@@ -65,10 +71,13 @@ public class ChessMatch {
     private void initialSetup() {
         placeNewPiece('a', 1, new Rook(board, Color.WHITE));
         placeNewPiece('h', 1, new Rook(board, Color.WHITE));
+        placeNewPiece('e', 1, new King(board, Color.WHITE));
+
+        
         placeNewPiece('a', 8, new Rook(board, Color.BLACK));
         placeNewPiece('h', 8, new Rook(board, Color.BLACK));
         placeNewPiece('e', 8, new King(board, Color.BLACK));
-        placeNewPiece('e', 1, new King(board, Color.WHITE));
+
     }
 
     public ChessPiece perfomChessMove(ChessPosition sourcePosition, ChessPosition targetPosition) {
@@ -85,7 +94,12 @@ public class ChessMatch {
 
         check = (kingCheck(opponent(currentPlayer))) ? true : false;
 
+        if(testCheckMate(opponent(currentPlayer))) {
+            testCheckMate = true;
+        }
+        else {
         nextTurn();
+        }
         return (ChessPiece)capturedPiece;
     }
     private void validateSourcePosition(Position position) {
@@ -155,5 +169,30 @@ public class ChessMatch {
             }
         }
         return false;
+    }
+
+    private boolean testCheckMate(Color color) {
+        if (!kingCheck(color)) {
+            return false;
+        }
+        List<Piece> list = piecesOnTheBoard.stream().filter(x ->((ChessPiece)x).getColor() == color).collect(Collectors.toList());
+        for(Piece p : list) {
+            boolean[][] mat = p.possibleMoves();
+            for (int i=0;i < board.getRows();i++) {
+                for (int j = 0; j < board.getColumns(); j++) {
+                    if(mat[i][j]) {
+                        Position source = ((ChessPiece)p).getChessPosition().toPosition();
+                        Position target = new Position(i, j);
+                        Piece capturedPiece = makeMove(source, target);
+                        boolean check = kingCheck(color);
+                        undoMove(source, target, capturedPiece);
+                        if(!check) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 }
