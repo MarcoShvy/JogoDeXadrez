@@ -135,7 +135,7 @@ public class ChessMatch {
                 promoted = replacePromotedPiece("Q");
             }
         }
-        check = (kingCheck(opponent(currentPlayer))) ? true : false;
+        check = kingCheck(opponent(currentPlayer)) ? true : false;
 
         if(testCheckMate(opponent(currentPlayer))) {
             testCheckMate = true;
@@ -154,7 +154,7 @@ public class ChessMatch {
 
     public ChessPiece replacePromotedPiece(String type) {
         if(promoted == null) {
-            throw new IllegalStateException("There is no piece to be promoted");
+            return promoted;
         }
         if(!type.equals("B") && !type.equals("H") && !type.equals("R") && !type.equals("Q")) {
             throw new InvalidParameterException("Invalid type for promotion");
@@ -297,6 +297,7 @@ public class ChessMatch {
     }
 
     private boolean kingCheck(Color color) {
+
         Position kingPosition = king(color).getChessPosition().toPosition();
         List<Piece> opponentPieces = piecesOnTheBoard.stream().filter(x ->((ChessPiece)x).getColor() == opponent(color)).collect(Collectors.toList());
         for(Piece p : opponentPieces) {
